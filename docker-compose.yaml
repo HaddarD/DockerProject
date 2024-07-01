@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  mongo1:
+    image: mongo:5
+    container_name: mongo1
+    networks:
+      - mongoCluster
+    ports:
+      - 27017:27017
+    command: mongod --replSet myReplicaSet --bind_ip localhost,mongo1
+
+  mongo2:
+    image: mongo:5
+    container_name: mongo2
+    networks:
+      - mongoCluster
+    ports:
+      - 27018:27017
+    command: mongod --replSet myReplicaSet --bind_ip localhost,mongo2
+
+  mongo3:
+    image: mongo:5
+    container_name: mongo3
+    networks:
+      - mongoCluster
+    ports:
+      - 27019:27017
+    command: mongod --replSet myReplicaSet --bind_ip localhost,mongo3
+
+  mongo-init-replica:
+    image: mongo:5
+    container_name: mongo-init-replica
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    networks:
+      - mongoCluster
+    entrypoint: >
+      bash -c "
+      sleep 10;
+      mongosh --host mongo1 --eval 'rs.initiate({_id: \"myReplicaSet\", members: [{_id: 0, host: \"mongo1:27017\"}, {_id: 1, host: \"mongo2:27017\"}, {_id: 2, host: \"mongo3:27017\"}]})';
+      mongosh --host mongo1 --eval 'rs.status()'
+      "
+
+  polybot:
+    image:
+    container_name:
+    networks:
+    ports:
+    environment:
+
+  yolo5:
+    image:
+    container_name:
+    networks:
+    ports:
+    environment:
+
+networks:
+  mongoCluster:
+    driver: bridge
