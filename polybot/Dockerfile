@@ -6,8 +6,5 @@ WORKDIR /app
 COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-#Source the .env file for variables
-ARG PRIVATE_KEY
-ENV PRIVATE_KEY=${PRIVATE_KEY}
 # Define the command to run the bot.py
 CMD ["python3", "app.py"]

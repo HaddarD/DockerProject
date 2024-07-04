@@ -6,8 +6,11 @@ services:
     container_name: mongo1
     networks:
       - mongoCluster
+      - yolo
     ports:
       - 27017:27017
+    volumes:
+      - mongo1-data:/data/db
     command: mongod --replSet myReplicaSet --bind_ip localhost,mongo1
 
   mongo2:
@@ -17,6 +20,8 @@ services:
       - mongoCluster
     ports:
       - 27018:27017
+    volumes:
+      - mongo2-data:/data/db
     command: mongod --replSet myReplicaSet --bind_ip localhost,mongo2
 
   mongo3:
@@ -26,6 +31,8 @@ services:
       - mongoCluster
     ports:
       - 27019:27017
+    volumes:
+      - mongo3-data:/data/db
     command: mongod --replSet myReplicaSet --bind_ip localhost,mongo3
 
   mongo-init-replica:
@@ -45,19 +52,38 @@ services:
       "
 
   polybot:
-    image:
-    container_name:
+    image: ${POLY_IMAGE_NAME}
+    container_name: polybot
     networks:
+      - polybot
     ports:
+      - ${POLY_PORT}:${POLY_PORT}
     environment:
+      TELEGRAM_APP_URL:
+      BUCKET_NAME:
+      YOLO_NAME: yolo5
 
   yolo5:
-    image:
-    container_name:
+    image: ${YOLO_IMAGE_NAME}
+    container_name: yolo5
     networks:
+      - yolo
+      - polybot
     ports:
+      - ${YOLO_PORT}:${YOLO_PORT}
     environment:
+      BUCKET_NAME:
 
 networks:
   mongoCluster:
+    name: mongoCluster
     driver: bridge
+  polybot:
+    name: polybot
+  yolo:
+    name: yolo
+
+volumes:
+  mongo1-data:
+  mongo2-data:
+  mongo3-data:
