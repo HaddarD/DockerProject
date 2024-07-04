@@ -70,7 +70,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           source: docker-compose.yaml
           target: PolybotService/
-          forward_agent: true
 
       - name: Update the Docker Compose project in the EC2
         uses: appleboy/ssh-action@master
@@ -103,4 +102,3 @@ jobs:
             
             # Take it up with the current updated values
             docker compose up -d
-          forward_agent: true
