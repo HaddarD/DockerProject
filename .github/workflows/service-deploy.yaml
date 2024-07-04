@@ -88,7 +88,7 @@ jobs:
             echo "${{ secrets.TELEGRAM_BOT_TOKEN }}" > telegram_bot_token.secret
             
             # Get the ngrok current domain (you should assume ngrok is already running in the EC2)
-            NGROK_DOMAIN=$(curl -s  https://intent-frankly-wildcat.ngrok-free.app/api/tunnels | jq -r '.tunnels[0].public_url')
+            NGROK_DOMAIN=$(curl -s localhost:8443/api/tunnels | jq -r '.tunnels[0].public_url')
             
             # Generate .env file
             echo """
@@ -97,7 +97,7 @@ jobs:
             POLY_PORT=8443
             YOLO5_IMG_NAME=hemla/yolo5:${{ github.run_number }}
             YOLO_PORT=8081
-            TELEGRAM_APP_URL=$NGROK_DOMAIN
+            TELEGRAM_APP_URL=https://intent-frankly-wildcat.ngrok-free.app
             """ > .env
             
             # Take the service down
