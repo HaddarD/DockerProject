@@ -57,10 +57,8 @@ services:
       - polybot
     ports:
       - ${POLY_PORT}:${POLY_PORT}
-    environment:
-      TELEGRAM_APP_URL:
-      BUCKET_NAME:
-      YOLO_NAME: yolo5
+    env_file:
+      .env
 
   yolo5:
     image: ${YOLO_IMAGE_NAME}
@@ -70,8 +68,8 @@ services:
       - polybot
     ports:
       - ${YOLO_PORT}:${YOLO_PORT}
-    environment:
-      BUCKET_NAME:
+    env_file:
+      .env
 
 networks:
   mongoCluster:

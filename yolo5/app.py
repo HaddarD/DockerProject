@@ -9,7 +9,7 @@ from loguru import logger
 import os
 import sys
 from pymongo import MongoClient
-from utils import download_from_s3, upload_to_s3, TryExcept
+from utils import download_from_s3, upload_to_s3, try_except
 
 # Environment variables
 images_bucket = os.environ['BUCKET_NAME']

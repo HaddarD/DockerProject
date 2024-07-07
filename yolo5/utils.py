@@ -37,7 +37,7 @@ def predict_image(bucket_name, yolo_service_url, img_path):
         response.raise_for_status()
 
 
-class TryExcept:
+def try_except():
     @staticmethod
     def attempt(func, *args, **kwargs):
         try:
