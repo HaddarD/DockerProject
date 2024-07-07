@@ -93,9 +93,9 @@ jobs:
             # Generate .env file
             echo """
             BUCKET_NAME=haddar-docker-project-bucket
-            POLY_IMAGE_NAME=hemla/polybot
+            POLY_IMAGE_NAME=hemla/polybot:${{ github.run_number }}
             POLY_PORT=8443
-            YOLO_IMAGE_NAME=hemla/yolo5
+            YOLO_IMAGE_NAME=hemla/yolo5:${{ github.run_number }}
             YOLO_PORT=8081
             TELEGRAM_APP_URL=https://intent-frankly-wildcat.ngrok-free.app
             """ > .env
