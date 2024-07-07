@@ -4,13 +4,9 @@ from flask import Flask, request
 from detect import run
 import uuid
 import yaml
-import torch
 from loguru import logger
-import os
-import sys
 from pymongo import MongoClient
 import subprocess
-import logging
 import os
 
 # Environment variables

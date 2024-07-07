@@ -99,6 +99,7 @@ jobs:
             YOLO_PORT=8081
             TELEGRAM_APP_URL=https://intent-frankly-wildcat.ngrok-free.app
             TELEGRAM_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+            MONGO_URI=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/?replicaSet=myReplicaSet
             """ > .env
             
             # Take the service down
