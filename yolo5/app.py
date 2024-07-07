@@ -9,7 +9,9 @@ from loguru import logger
 import os
 import sys
 from pymongo import MongoClient
-from utils import download_from_s3, upload_to_s3, try_except
+import subprocess
+import logging
+import os
 
 # Environment variables
 images_bucket = os.environ['BUCKET_NAME']
@@ -23,6 +25,28 @@ with open("data/coco128.yaml", "r") as stream:
 
 # Initialize Flask
 app = Flask(__name__)
+
+
+def download_from_s3(bucket_name, s3_key, local_path):
+    command = f'aws s3 cp s3://{bucket_name}/{s3_key} {local_path}'
+    try:
+        subprocess.run(command, shell=True, check=True)
+        logger.info(f'Successfully downloaded {s3_key} from {bucket_name}')
+    except subprocess.CalledProcessError as e:
+        logger.error(f'Error downloading from S3: {e}')
+        raise
+
+
+def upload_to_s3(local_path, s3_key):
+    bucket_name = os.environ['BUCKET_NAME']
+    command = f'aws s3 cp {local_path} s3://{bucket_name}/{s3_key}'
+    try:
+        subprocess.run(command, shell=True, check=True)
+        logger.info(f'Successfully uploaded {local_path} to {bucket_name}/{s3_key}')
+    except subprocess.CalledProcessError as e:
+        logger.error(f'Error uploading to S3: {e}')
+        raise
+
 
 @app.route('/predict', methods=['POST'])
 def predict():
