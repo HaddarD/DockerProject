@@ -3,8 +3,9 @@ from loguru import logger
 import os
 import time
 from telebot.types import InputFile
-from polybot.img_proc import Img
+from img_proc import Img
 from utils import prediction_decode
+
 
 class Bot:
 
@@ -196,7 +197,6 @@ class Bot:
             self.send_photo(chat_id, processed_image_path)
             self.image_path = ""
             self.images = []
-
 
 
 

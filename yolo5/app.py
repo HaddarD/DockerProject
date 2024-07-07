@@ -1,7 +1,7 @@
 import time
 from pathlib import Path
 from flask import Flask, request
-from yolov5.detect import run
+from detect import run
 import uuid
 import yaml
 import torch
