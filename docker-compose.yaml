@@ -69,7 +69,18 @@ services:
     ports:
       - ${YOLO_PORT}:${YOLO_PORT}
     env_file:
-      .env
+      - .env
+
+  client:
+    image: hemla/client
+    depends_on:
+      - yolo5
+    env_file:
+      - .env
+    networks:
+      - polybot
+      - yolo
+
 
 networks:
   mongoCluster:
