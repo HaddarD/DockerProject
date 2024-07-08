@@ -35,10 +35,11 @@ def download_from_s3(bucket_name, s3_key, local_path):
 
 def upload_to_s3(local_path, s3_key):
     bucket_name = os.environ['BUCKET_NAME']
-    command = f'aws s3 cp {local_path} s3://{bucket_name}/{s3_key}'
+    command = f'aws s3 cp {local_path}/{s3_key} s3://{bucket_name}/{s3_key}'
+    logger.info(command)
     try:
         subprocess.run(command, shell=True, check=True)
-        logger.info(f'Successfully uploaded {local_path} to {bucket_name}/{s3_key}')
+        logger.info(f'Successfully uploaded {local_path}/{s3_key} to {bucket_name}/{s3_key}')
     except subprocess.CalledProcessError as e:
         logger.error(f'Error uploading to S3: {e}')
         raise
@@ -50,15 +51,16 @@ def predict():
     logger.info(f'prediction: {prediction_id}. start processing')
 
     img_name = request.args.get('imgName')
+    logger.info(img_name)
 
     original_img_path = f'static/data/{img_name}'
-    download_from_s3(images_bucket, img_name, original_img_path)
+    download_from_s3(images_bucket, img_name, str(original_img_path))
     logger.info(f'Prediction: {prediction_id}/{original_img_path}. Download img completed')
 
     run(
         weights='yolov5s.pt',
         data='data/coco128.yaml',
-        source=original_img_path,
+        source=str(original_img_path),
         project='static/data',
         name=prediction_id,
         save_txt=True
@@ -67,7 +69,7 @@ def predict():
 
     predicted_img_path = Path(f'static/data/{prediction_id}/{original_img_path}')
 
-    upload_to_s3(predicted_img_path, f'{img_name}')
+    upload_to_s3(str(predicted_img_path), f'{img_name}')
 
     pred_summary_path = Path(f'static/data/{prediction_id}/labels/{img_name.split(".")[0]}.txt')
     if pred_summary_path.exists():
@@ -86,7 +88,7 @@ def predict():
 
         prediction_summary = {
             'prediction_id': prediction_id,
-            'original_img_path': original_img_path,
+            'original_img_path': str(original_img_path),
             'predicted-img_path': str(predicted_img_path),
             'labels': labels,
             'time': time.time()
