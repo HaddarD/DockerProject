@@ -130,16 +130,30 @@ class Img:
             raise ValueError("Image name is empty")
         try:
             self.upload_to_s3(image_path, image_name)
+            logger.info(f"Successfully uploaded {image_name} to S3")
         except Exception as e:
             logger.exception(f'<red>Error uploading image to S3: {e}</red>')
             raise
 
+        logger.info(f"Starting prediction for image: {image_name}")
+        logger.info(f"YOLO service URL: {yolo_service_url}")
+
         # Send a request to the YOLO5 service for prediction
-        response = requests.post(f'{yolo_service_url}/predict', params={'imgName': image_name})
-        if response.status_code == 200:
-            return response.json()
-        else:
+        full_url = f'{yolo_service_url}/predict'
+        logger.info(f"Sending prediction request to: {full_url}")
+        try:
+            response = requests.post(full_url, params={'imgName': image_name})
             response.raise_for_status()
+            logger.info(f"Received response from YOLO5 service: {response.status_code}")
+            return response.json()
+        except requests.RequestException as e:
+            logger.exception(f"Error during YOLO5 service request: {e}")
+            raise
+        # response = requests.post(f'{yolo_service_url}/predict', params={'imgName': image_name})
+        # if response.status_code == 200:
+        #     return response.json()
+        # else:
+        #     response.raise_for_status()
 
     def upload_to_s3(self, file_path, object_name=None):
         if object_name is None:
