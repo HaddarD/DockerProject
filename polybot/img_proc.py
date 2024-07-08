@@ -153,26 +153,6 @@ class Img:
             logger.error(f"Error uploading file to S3: {e}")
             raise
 
-    def call_yolo5_service(self, url, payload):
-        max_retries = 3
-        retry_delay = 1  # in seconds
-        retries = 0
-
-        while retries < max_retries:
-            try:
-                response = requests.post(url, json=payload)
-                response.raise_for_status()
-                return response.json()
-            except RequestException as e:
-                print(f"Error connecting to YOLO5 service: {e}")
-                retries += 1
-                if retries < max_retries:
-                    print(f"Retrying in {retry_delay} seconds...")
-                    time.sleep(retry_delay)
-                else:
-                    print("Max retries reached, giving up.")
-                    raise e
-
     def download_from_s3(self, bucket_name, object_name, download_path=None):
         if download_path is None:
             download_path = object_name
