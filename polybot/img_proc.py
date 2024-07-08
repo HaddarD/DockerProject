@@ -132,7 +132,7 @@ class Img:
         upload_to_s3(image_path, image_name)
 
         # Send a request to the YOLO5 service for prediction
-        response = requests.post(f'{yolo_service_url}/predict', params={'imgName': self.path.name})
+        response = requests.post(f'{yolo_service_url}/predict', params={'imgName': image_name})
         if response.status_code == 200:
             return response.json()
         else:
