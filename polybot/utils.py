@@ -20,11 +20,11 @@ def download_from_s3(bucket_name, s3_key, local_path):
 
 def upload_to_s3(local_path, s3_key):
     bucket_name = os.environ['BUCKET_NAME']
-    command = f'aws s3 cp {local_path}/{s3_key} s3://{bucket_name}/{s3_key}'
+    command = f'aws s3 cp {local_path} s3://{bucket_name}/{s3_key}'
     logger.info(command)
     try:
         subprocess.run(command, shell=True, check=True)
-        logger.info(f'Successfully uploaded {local_path}/{s3_key} to {bucket_name}/{s3_key}')
+        logger.info(f'Successfully uploaded {local_path} to s3://{bucket_name}/{s3_key}')
     except subprocess.CalledProcessError as e:
         logger.error(f'Error uploading to S3: {e}')
         raise
