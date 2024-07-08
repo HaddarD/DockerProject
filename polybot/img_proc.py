@@ -3,6 +3,7 @@ from matplotlib.image import imread, imsave
 import random
 import requests
 from utils import upload_to_s3
+from loguru import logger
 
 def rgb2gray(rgb):
     r, g, b = rgb[:, :, 0], rgb[:, :, 1], rgb[:, :, 2]
@@ -129,7 +130,10 @@ class Img:
         :return: The prediction summary
         """
         # Upload the image to S3
-        upload_to_s3(image_path, image_name)
+        try:
+            upload_to_s3(image_path, image_name)
+        except Exception as e:
+            logger.exception(e)
 
         # Send a request to the YOLO5 service for prediction
         response = requests.post(f'{yolo_service_url}/predict', params={'imgName': image_name})

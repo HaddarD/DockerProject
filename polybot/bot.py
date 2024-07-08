@@ -177,13 +177,15 @@ class Bot:
                 img.segment()
             elif command == '/predict':
                 try:
-                    bucket_name = os.environ['BUCKET_NAME']
                     yolo_service_url = os.environ['YOLO_SERVICE_URL']
+                    self.image_path = ""
+                    image_path = os.path.abspath(self.image_path)
                     image_name = os.path.basename(self.image_path)
-                    prediction_summary = img.upload_and_predict(yolo_service_url, self.image_path, image_name)
+                    prediction_summary = img.upload_and_predict(yolo_service_url, image_path, image_name)
+                    logger.info(yolo_service_url)
+                    logger.info(prediction_summary)
                     caption = prediction_decode(prediction_summary)
                     self.send_photo(chat_id, img, caption)
-                    self.image_path = ""
                     self.images = []
                     return
                 except Exception as e:
