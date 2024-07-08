@@ -4,6 +4,7 @@ import random
 import requests
 from utils import upload_to_s3
 from loguru import logger
+import os
 
 def rgb2gray(rgb):
     r, g, b = rgb[:, :, 0], rgb[:, :, 1], rgb[:, :, 2]
@@ -123,6 +124,8 @@ class Img:
             self.data[i] = [0 if pixel < average else 255 for pixel in row]
 
     def upload_and_predict(self, yolo_service_url, image_path, image_name):
+        if not image_name:
+            raise ValueError("Image name is empty")
         try:
             upload_to_s3(image_path, image_name)
         except Exception as e:

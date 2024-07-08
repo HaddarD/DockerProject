@@ -178,15 +178,13 @@ class Bot:
             elif command == '/predict':
                 try:
                     yolo_service_url = os.environ['YOLO_SERVICE_URL']
-                    self.image_path = ""
                     image_path = os.path.abspath(self.image_path)
                     image_name = os.path.basename(self.image_path)
                     prediction_summary = img.upload_and_predict(yolo_service_url, image_path, image_name)
-                    logger.info(yolo_service_url)
-                    logger.info(prediction_summary)
                     caption = prediction_decode(prediction_summary)
                     self.send_photo(chat_id, img, caption)
                     self.images = []
+                    self.image_path = ""
                     return
                 except Exception as e:
                     logger.error(f"Error during prediction: {e}")
