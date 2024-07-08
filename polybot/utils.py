@@ -7,6 +7,7 @@ from collections import Counter
 
 logger = logging.getLogger(__name__)
 
+
 def download_from_s3(bucket_name, s3_key, local_path):
     command = f'aws s3 cp s3://{bucket_name}/{s3_key} {local_path}'
     try:
@@ -15,6 +16,7 @@ def download_from_s3(bucket_name, s3_key, local_path):
     except subprocess.CalledProcessError as e:
         logger.error(f'Error downloading from S3: {e}')
         raise
+
 
 def upload_to_s3(local_path, s3_key):
     bucket_name = os.environ['BUCKET_NAME']
@@ -51,6 +53,7 @@ def predict_image(bucket_name, yolo_service_url, img_path):
         return response.json()
     else:
         response.raise_for_status()
+
 
 def try_except():
     @staticmethod

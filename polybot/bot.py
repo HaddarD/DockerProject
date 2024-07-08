@@ -105,6 +105,7 @@ class Bot:
                 pass
         except Exception:
             self.send_text(chat_id, "Please try again")
+
     def send_text_with_quote(self, chat_id, text, quoted_msg_id):
         try:
             self.telegram_bot_client.send_message(chat_id, text, reply_to_message_id=quoted_msg_id)
@@ -178,7 +179,8 @@ class Bot:
                 try:
                     bucket_name = os.environ['BUCKET_NAME']
                     yolo_service_url = os.environ['YOLO_SERVICE_URL']
-                    prediction_summary = img.upload_and_predict(bucket_name, yolo_service_url)
+                    image_name = os.path.basename(self.image_path)
+                    prediction_summary = img.upload_and_predict(yolo_service_url, self.image_path, image_name)
                     caption = prediction_decode(prediction_summary)
                     self.send_photo(chat_id, img, caption)
                     self.image_path = ""

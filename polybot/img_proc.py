@@ -121,7 +121,7 @@ class Img:
         for i, row in enumerate(self.data):
             self.data[i] = [0 if pixel < average else 255 for pixel in row]
 
-    def upload_and_predict(self, bucket_name, yolo_service_url):
+    def upload_and_predict(self, yolo_service_url, image_path, image_name):
         """
         Uploads the image to S3 and sends an HTTP request to the YOLO5 service for prediction
         :param bucket_name: The name of the S3 bucket
@@ -129,7 +129,7 @@ class Img:
         :return: The prediction summary
         """
         # Upload the image to S3
-        upload_to_s3(self.path, bucket_name, self.path.name)
+        upload_to_s3(image_path, image_name)
 
         # Send a request to the YOLO5 service for prediction
         response = requests.post(f'{yolo_service_url}/predict', params={'imgName': self.path.name})

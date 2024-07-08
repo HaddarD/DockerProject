@@ -67,7 +67,7 @@ def predict():
 
     predicted_img_path = Path(f'static/data/{prediction_id}/{original_img_path}')
 
-    upload_to_s3(predicted_img_path, f'{prediction_id}/{img_name}')
+    upload_to_s3(predicted_img_path, f'{img_name}')
 
     pred_summary_path = Path(f'static/data/{prediction_id}/labels/{img_name.split(".")[0]}.txt')
     if pred_summary_path.exists():
