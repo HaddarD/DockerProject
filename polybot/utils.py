@@ -1,32 +1,35 @@
 import json
 import subprocess
-import logging
+from loguru import logger
 import os
 import requests
 from collections import Counter
+import boto3
+from botocore.exceptions import ClientError
 
-logger = logging.getLogger(__name__)
+logger = logger.opt(colors=True)
 
 
 def download_from_s3(bucket_name, s3_key, local_path):
-    command = f'aws s3 cp s3://{bucket_name}/{s3_key} {local_path}'
+    s3_client = boto3.client('s3')
+
     try:
-        subprocess.run(command, shell=True, check=True)
-        logger.info(f'Successfully downloaded {s3_key} from {bucket_name}')
-    except subprocess.CalledProcessError as e:
-        logger.error(f'Error downloading from S3: {e}')
+        s3_client.download_file(bucket_name, s3_key, local_path)
+        logger.info(f'<green>Successfully downloaded {s3_key} from {bucket_name}</green>')
+    except ClientError as e:
+        logger.error(f'<red>Error downloading from S3: {e}</red>')
         raise
 
 
 def upload_to_s3(local_path, s3_key):
     bucket_name = os.environ['BUCKET_NAME']
-    command = f'aws s3 cp {local_path} s3://{bucket_name}/{s3_key}'
-    logger.info(command)
+    s3_client = boto3.client('s3')
+
     try:
-        subprocess.run(command, shell=True, check=True)
-        logger.info(f'Successfully uploaded {local_path} to s3://{bucket_name}/{s3_key}')
-    except subprocess.CalledProcessError as e:
-        logger.error(f'Error uploading to S3: {e}')
+        s3_client.upload_file(local_path, bucket_name, s3_key)
+        logger.info(f'<green>Successfully uploaded {local_path} to s3://{bucket_name}/{s3_key}</green>')
+    except ClientError as e:
+        logger.error(f'<red>Error uploading to S3: {e}</red>')
         raise
 
 
@@ -43,7 +46,7 @@ def prediction_decode(prediction_summary):
         return {}
 
 
-def predict_image(bucket_name, yolo_service_url, img_path):
+def predict_image(yolo_service_url, img_path):
     # Upload the image to S3
     s3_key = os.path.basename(img_path)
     upload_to_s3(img_path, s3_key)

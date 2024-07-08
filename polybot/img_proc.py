@@ -123,17 +123,11 @@ class Img:
             self.data[i] = [0 if pixel < average else 255 for pixel in row]
 
     def upload_and_predict(self, yolo_service_url, image_path, image_name):
-        """
-        Uploads the image to S3 and sends an HTTP request to the YOLO5 service for prediction
-        :param bucket_name: The name of the S3 bucket
-        :param yolo_service_url: The URL of the YOLO5 service
-        :return: The prediction summary
-        """
-        # Upload the image to S3
         try:
             upload_to_s3(image_path, image_name)
         except Exception as e:
-            logger.exception(e)
+            logger.exception(f'<red>Error uploading image to S3: {e}</red>')
+            raise
 
         # Send a request to the YOLO5 service for prediction
         response = requests.post(f'{yolo_service_url}/predict', params={'imgName': image_name})

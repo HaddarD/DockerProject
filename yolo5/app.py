@@ -6,8 +6,11 @@ import uuid
 import yaml
 from loguru import logger
 from pymongo import MongoClient
-import subprocess
 import os
+import boto3
+from botocore.exceptions import ClientError
+
+logger = logger.opt(colors=True)
 
 # Environment variables
 images_bucket = os.environ['BUCKET_NAME']
@@ -24,24 +27,24 @@ app = Flask(__name__)
 
 
 def download_from_s3(bucket_name, s3_key, local_path):
-    command = f'aws s3 cp s3://{bucket_name}/{s3_key} {local_path}'
-    try:
-        subprocess.run(command, shell=True, check=True)
-        logger.info(f'Successfully downloaded {s3_key} from {bucket_name}')
-    except subprocess.CalledProcessError as e:
-        logger.error(f'Error downloading from S3: {e}')
-        raise
+    s3_client = boto3.client('s3')
 
+    try:
+        s3_client.download_file(bucket_name, s3_key, local_path)
+        logger.info(f'<green>Successfully downloaded {s3_key} from {bucket_name}</green>')
+    except ClientError as e:
+        logger.error(f'<red>Error downloading from S3: {e}</red>')
+        raise
 
 def upload_to_s3(local_path, s3_key):
     bucket_name = os.environ['BUCKET_NAME']
-    command = f'aws s3 cp {local_path} s3://{bucket_name}/{s3_key}'
-    logger.info(command)
+    s3_client = boto3.client('s3')
+
     try:
-        subprocess.run(command, shell=True, check=True)
-        logger.info(f'Successfully uploaded {local_path} to s3://{bucket_name}/{s3_key}')
-    except subprocess.CalledProcessError as e:
-        logger.error(f'Error uploading to S3: {e}')
+        s3_client.upload_file(local_path, bucket_name, s3_key)
+        logger.info(f'<green>Successfully uploaded {local_path} to s3://{bucket_name}/{s3_key}</green>')
+    except ClientError as e:
+        logger.error(f'<red>Error uploading to S3: {e}</red>')
         raise
 
 

@@ -6,8 +6,5 @@ WORKDIR /app
 COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-# Install AWS CLI
-RUN apt-get update && \
-    apt-get install -y awscli
 # Define the command to run the bot.py
 CMD ["python3", "app.py"]
