@@ -4,7 +4,8 @@ import os
 import time
 from telebot.types import InputFile
 from img_proc import Img
-from utils import prediction_decode
+from collections import Counter
+import json
 
 
 class Bot:
@@ -181,7 +182,7 @@ class Bot:
                     image_path = os.path.abspath(self.image_path)
                     image_name = os.path.basename(self.image_path)
                     prediction_summary = img.upload_and_predict(yolo_service_url, image_path, image_name)
-                    caption = prediction_decode(prediction_summary)
+                    caption = self.prediction_decode(prediction_summary)
                     self.send_photo(chat_id, img, caption)
                     self.images = []
                     self.image_path = ""
@@ -201,4 +202,14 @@ class Bot:
             self.images = []
 
 
-
+    def prediction_decode(self, prediction_summary):
+        try:
+            labels = prediction_summary['labels']
+            classes = [label['class'] for label in labels]
+            quantities = Counter(classes)
+            response = "Prediction Summary:\n"
+            response += [f"{key.capitalize()} - {value}\n" for key, value in quantities.items()]
+            return response
+        except (json.JSONDecodeError, KeyError) as e:
+            logger.error(f'Error decoding JSON response: {e}')
+            return {}

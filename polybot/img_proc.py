@@ -2,9 +2,10 @@ from pathlib import Path
 from matplotlib.image import imread, imsave
 import random
 import requests
-from utils import upload_to_s3
-from loguru import logger
 import os
+from loguru import logger
+import boto3
+from botocore.exceptions import ClientError
 
 def rgb2gray(rgb):
     r, g, b = rgb[:, :, 0], rgb[:, :, 1], rgb[:, :, 2]
@@ -127,7 +128,7 @@ class Img:
         if not image_name:
             raise ValueError("Image name is empty")
         try:
-            upload_to_s3(image_path, image_name)
+            self.upload_to_s3(image_path, image_name)
         except Exception as e:
             logger.exception(f'<red>Error uploading image to S3: {e}</red>')
             raise
@@ -139,3 +140,26 @@ class Img:
         else:
             response.raise_for_status()
 
+    def upload_to_s3(self, bucket_name, file_path, object_name=None):
+        if object_name is None:
+            object_name = os.path.basename(file_path)
+
+        s3_client = boto3.client('s3')
+        try:
+            s3_client.upload_file(file_path, bucket_name, object_name)
+            image_url = f"https://{bucket_name}.s3.amazonaws.com/{object_name}"
+            return image_url
+        except ClientError as e:
+            logger.error(f"Error uploading file to S3: {e}")
+            raise
+
+    def download_from_s3(self, bucket_name, object_name, download_path=None):
+        if download_path is None:
+            download_path = object_name
+
+        s3_client = boto3.client('s3')
+        try:
+            s3_client.download_file(bucket_name, object_name, download_path)
+        except ClientError as e:
+            logger.error(f"Error downloading file from S3: {e}")
+            raise
