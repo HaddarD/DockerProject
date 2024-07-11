@@ -1,6 +1,6 @@
 services:
   mongo1:
-    image: mongo:5
+    image: mongo:4
     container_name: mongo1
     networks:
       - mongoCluster
@@ -12,7 +12,7 @@ services:
     command: mongod --replSet myReplicaSet --bind_ip_all
 
   mongo2:
-    image: mongo:5
+    image: mongo:4
     container_name: mongo2
     networks:
       - mongoCluster
@@ -23,7 +23,7 @@ services:
     command: mongod --replSet myReplicaSet --bind_ip_all
 
   mongo3:
-    image: mongo:5
+    image: mongo:4
     container_name: mongo3
     networks:
       - mongoCluster
@@ -34,7 +34,7 @@ services:
     command: mongod --replSet myReplicaSet --bind_ip_all
 
   mongo-init-replica:
-    image: mongo:5
+    image: mongo:4
     container_name: mongo-init-replica
     depends_on:
       - mongo1
@@ -59,6 +59,8 @@ services:
       - ${POLY_PORT}:${POLY_PORT}
     env_file:
       .env
+    volumes:
+      - /home/DevOps/.aws/credentials:/root/.aws/credentials
 
   yolo5:
     image: ${YOLO_IMAGE_NAME}
@@ -70,6 +72,8 @@ services:
       - ${YOLO_PORT}:${YOLO_PORT}
     env_file:
       .env
+    volumes:
+      - /home/DevOps/.aws/credentials:/root/.aws/credentials
 
 networks:
   mongoCluster:

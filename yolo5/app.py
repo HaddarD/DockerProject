@@ -38,7 +38,17 @@ def download_from_s3(bucket_name, s3_key, local_path):
 
 def upload_to_s3(local_path, s3_key):
     bucket_name = os.environ['BUCKET_NAME']
+    if s3_key is None:
+        object_name = os.path.basename(local_path)
+
     s3_client = boto3.client('s3')
+    try:
+        s3_client.upload_file(local_path, bucket_name, s3_key)
+        image_url = f"https://{bucket_name}.s3.amazonaws.com/{s3_key}"
+        return image_url
+    except ClientError as e:
+        logger.error(f"Error uploading file to S3: {e}")
+        raise
 
     try:
         s3_client.upload_file(local_path, bucket_name, s3_key)
