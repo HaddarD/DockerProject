@@ -30,11 +30,14 @@ def download_from_s3(bucket_name, s3_key, local_path):
     s3_client = boto3.client('s3')
 
     try:
+        path = Path(local_path)
+        path.mkdir(parents=True, exist_ok=True)
         s3_client.download_file(bucket_name, s3_key, local_path)
         logger.info(f'<green>Successfully downloaded {s3_key} from {bucket_name}</green>')
     except ClientError as e:
         logger.error(f'<red>Error downloading from S3: {e}</red>')
         raise
+
 
 def upload_to_s3(local_path, s3_key):
     bucket_name = os.environ['BUCKET_NAME']
@@ -50,12 +53,12 @@ def upload_to_s3(local_path, s3_key):
         logger.error(f"Error uploading file to S3: {e}")
         raise
 
-    try:
-        s3_client.upload_file(local_path, bucket_name, s3_key)
-        logger.info(f'<green>Successfully uploaded {local_path} to s3://{bucket_name}/{s3_key}</green>')
-    except ClientError as e:
-        logger.error(f'<red>Error uploading to S3: {e}</red>')
-        raise
+    # try:
+    #     s3_client.upload_file(local_path, bucket_name, s3_key)
+    #     logger.info(f'<green>Successfully uploaded {local_path} to s3://{bucket_name}/{s3_key}</green>')
+    # except ClientError as e:
+    #     logger.error(f'<red>Error uploading to S3: {e}</red>')
+    #     raise
 
 
 @app.route('/predict', methods=['POST'])
@@ -64,26 +67,26 @@ def predict():
     logger.info(f'prediction: {prediction_id}. start processing')
 
     img_name = request.args.get('imgName')
-    logger.info(img_name)
+    logger.info(f'Received image name: {img_name}')
 
-    original_img_path = Path(f'static/data/{img_name}')
+    original_img_path = Path(f'images/')
     download_from_s3(images_bucket, img_name, str(original_img_path))
     logger.info(f'Prediction: {prediction_id}/{original_img_path}. Download img completed')
 
     run(
         weights='yolov5s.pt',
         data='data/coco128.yaml',
-        source=str(original_img_path),
+        source=f'{original_img_path}/{img_name}',
         project='static/data',
         name=prediction_id,
         save_txt=True
     )
     logger.info(f'Prediction: {prediction_id}/{original_img_path}. done')
 
-    predicted_img_path = Path(f'static/data/{prediction_id}/{img_name}')
+    predicted_img_path = Path(f'{original_img_path}/{prediction_id}/{img_name}')
     upload_to_s3(str(predicted_img_path), f'{prediction_id}/{img_name}')
 
-    pred_summary_path = Path(f'static/data/{prediction_id}/labels/{img_name.split(".")[0]}.txt')
+    pred_summary_path = Path(f'{prediction_id}/{prediction_id}/labels/{img_name.split(".")[0]}.txt')
     if pred_summary_path.exists():
         with open(pred_summary_path) as f:
             labels = f.read().splitlines()
@@ -100,7 +103,7 @@ def predict():
 
         prediction_summary = {
             'prediction_id': prediction_id,
-            'original_img_path': str(original_img_path),
+            'original_img_path': f'{original_img_path}/{img_name}',
             'predicted-img_path': str(predicted_img_path),
             'labels': labels,
             'time': time.time()
@@ -115,7 +118,7 @@ def predict():
 
         return prediction_summary
     else:
-        return f'Prediction: {prediction_id}/{original_img_path}. prediction result not found', 404
+        return f'Prediction: {prediction_id}/{original_img_path}/{img_name}. prediction result not found', 404
 
 
 if __name__ == "__main__":
