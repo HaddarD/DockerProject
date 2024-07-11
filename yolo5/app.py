@@ -30,9 +30,10 @@ def download_from_s3(bucket_name, s3_key, local_path):
     s3_client = boto3.client('s3')
 
     try:
-        path = Path(local_path)
-        path.mkdir(parents=True, exist_ok=True)
-        s3_client.download_file(bucket_name, s3_key, local_path)
+        local_path = Path(local_path)
+        local_path.parent.mkdir(parents=True, exist_ok=True)
+        local_file_path = str(local_path.resolve())
+        s3_client.download_file(bucket_name, s3_key, local_file_path)
         logger.info(f'<green>Successfully downloaded {s3_key} from {bucket_name}</green>')
     except ClientError as e:
         logger.error(f'<red>Error downloading from S3: {e}</red>')
