@@ -64,14 +64,15 @@ def upload_to_s3(local_path, s3_key):
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    # img_name = request.args.get('imgName')
+    if 'imgName' in request.args:
+        img_name = request.args['imgName']
+    else:
+        return 'Error: imgName parameter is required', 400
+    logger.info(f'Received image name: {img_name}')
+
     prediction_id = str(uuid.uuid4())
     logger.info(f'prediction: {prediction_id}. start processing')
-
-    img_name = request.args.get('imgName')
-    if not img_name:
-        return "Image name is required", 400
-
-    logger.info(f'Received image name: {img_name}')
 
     original_img_path = Path(f'images/{img_name}')
     download_from_s3(images_bucket, img_name, str(original_img_path))
@@ -120,7 +121,7 @@ def predict():
             logger.error(f'Error storing prediction summary in MongoDB: {e}')
             return f'Error storing prediction summary in MongoDB: {e}', 500
 
-        return prediction_summary
+        return f'Prediction processed successfully:\n{prediction_summary}', 200
     else:
         return f'Prediction: {prediction_id}. prediction result not found', 404
 
