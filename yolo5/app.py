@@ -13,7 +13,7 @@ from botocore.exceptions import ClientError
 logger = logger.opt(colors=True)
 
 # Environment variables
-images_bucket = os.environ['BUCKET_NAME']
+images_bucket = os.getenv('BUCKET_NAME')
 
 mongo_client = MongoClient(os.environ['MONGO_URI'])
 db = mongo_client['predictions_db']
@@ -42,7 +42,7 @@ def download_from_s3(bucket_name, s3_key, local_path):
 
 
 def upload_to_s3(local_path, s3_key):
-    bucket_name = os.environ['BUCKET_NAME']
+    bucket_name = os.getenv('BUCKET_NAME')
     s3_client = boto3.client('s3')
 
     try:
@@ -68,26 +68,29 @@ def predict():
     logger.info(f'prediction: {prediction_id}. start processing')
 
     img_name = request.args.get('imgName')
+    if not img_name:
+        return "Image name is required", 400
+
     logger.info(f'Received image name: {img_name}')
 
-    original_img_path = Path(f'images/')
+    original_img_path = Path(f'images/{img_name}')
     download_from_s3(images_bucket, img_name, str(original_img_path))
-    logger.info(f'Prediction: {prediction_id}/{original_img_path}. Download img completed')
+    logger.info(f'Prediction: {prediction_id}. Download img completed')
 
     run(
         weights='yolov5s.pt',
         data='data/coco128.yaml',
-        source=f'{original_img_path}/{img_name}',
+        source=str(original_img_path),
         project='static/data',
         name=prediction_id,
         save_txt=True
     )
-    logger.info(f'Prediction: {prediction_id}/{original_img_path}. done')
+    logger.info(f'Prediction: {prediction_id}. done')
 
-    predicted_img_path = Path(f'{original_img_path}/{prediction_id}/{img_name}')
+    predicted_img_path = Path(f'static/data/{prediction_id}/{img_name}')
     upload_to_s3(str(predicted_img_path), f'{prediction_id}/{img_name}')
 
-    pred_summary_path = Path(f'{prediction_id}/{prediction_id}/labels/{img_name.split(".")[0]}.txt')
+    pred_summary_path = Path(f'static/data/{prediction_id}/labels/{img_name.split(".")[0]}.txt')
     if pred_summary_path.exists():
         with open(pred_summary_path) as f:
             labels = f.read().splitlines()
@@ -100,11 +103,11 @@ def predict():
                 'height': float(label[4]),
             } for label in labels]
 
-        logger.info(f'Prediction: {prediction_id}/{original_img_path}. prediction summary:\n\n{labels}')
+        logger.info(f'Prediction: {prediction_id}. prediction summary:\n\n{labels}')
 
         prediction_summary = {
             'prediction_id': prediction_id,
-            'original_img_path': f'{original_img_path}/{img_name}',
+            'original_img_path': str(original_img_path),
             'predicted-img_path': str(predicted_img_path),
             'labels': labels,
             'time': time.time()
@@ -112,14 +115,14 @@ def predict():
 
         try:
             collection.insert_one(prediction_summary)
-            logger.info(f'Prediction: {prediction_id}/{original_img_path}. prediction summary stored in MongoDB')
+            logger.info(f'Prediction: {prediction_id}. prediction summary stored in MongoDB')
         except Exception as e:
             logger.error(f'Error storing prediction summary in MongoDB: {e}')
             return f'Error storing prediction summary in MongoDB: {e}', 500
 
         return prediction_summary
     else:
-        return f'Prediction: {prediction_id}/{original_img_path}/{img_name}. prediction result not found', 404
+        return f'Prediction: {prediction_id}. prediction result not found', 404
 
 
 if __name__ == "__main__":

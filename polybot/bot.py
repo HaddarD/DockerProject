@@ -6,6 +6,7 @@ from telebot.types import InputFile
 from img_proc import Img
 from collections import Counter
 import json
+import requests
 
 
 class Bot:
@@ -29,7 +30,8 @@ class Bot:
     def send_text_with_quote(self, chat_id, text, quoted_msg_id):
         self.telegram_bot_client.send_message(chat_id, text, reply_to_message_id=quoted_msg_id)
 
-    def is_current_msg_photo(self, msg):
+    @staticmethod
+    def is_current_msg_photo(msg):
         return 'photo' in msg
 
     def download_user_photo(self, msg):
@@ -52,19 +54,19 @@ class Bot:
 
         return file_info.file_path
 
-    def send_photo(self, chat_id, img_path, caption=None):
-        if not os.path.exists(img_path):
+    def send_photo(self, chat_id, image_path, caption=None):
+        if not os.path.exists(image_path):
             raise RuntimeError("Image path doesn't exist")
 
         if caption is None:
             self.telegram_bot_client.send_photo(
-            chat_id,
-            InputFile(img_path)
-        )
+                chat_id,
+                InputFile(image_path)
+            )
         else:
             self.telegram_bot_client.send_photo(
                 chat_id,
-                InputFile(img_path),
+                InputFile(image_path),
                 caption=caption
             )
 
@@ -83,9 +85,14 @@ class Bot:
                 if 'entities' in msg and msg['entities'][0]['type'] == 'bot_command':
                     self.handle_filter_command(msg)
                 elif msg["text"] != 'Please don\'t quote me':
-                    self.send_text_with_quote(msg['chat']['id'], msg["text"], quoted_msg_id=msg["message_id"])
+                    self.send_text_with_quote(
+                        chat_id,
+                        f"Hey! <('-'<)<('.')>(>'-')> \n {msg['text']}",
+                        quoted_msg_id=msg['message_id']
+                    )
+                    # self.send_text_with_quote(msg['chat']['id'], msg[f"Hey! <('-'<)<('.')>(>'-')> \n {msg}"], quoted_msg_id=msg["message_id"])
                 else:
-                    self.send_text(msg['chat']['id'], "Hey :D")
+                    self.send_text(chat_id, "Hey :D")
             elif 'document' in msg:
                 pass
             elif 'photo' in msg:
@@ -107,12 +114,12 @@ class Bot:
         except Exception:
             self.send_text(chat_id, "Please try again")
 
-    def send_text_with_quote(self, chat_id, text, quoted_msg_id):
-        try:
-            self.telegram_bot_client.send_message(chat_id, text, reply_to_message_id=quoted_msg_id)
-        except telebot.apihelper.ApiTelegramException as e:
-            logger.error(f"Error sending text with quote: {e}")
-            self.send_text(chat_id, text)  # Send the text without quote
+    # def send_text_with_quote(self, chat_id, text, quoted_msg_id):
+    #     try:
+    #         self.telegram_bot_client.send_message(chat_id, text, reply_to_message_id=quoted_msg_id)
+    #     except telebot.apihelper.ApiTelegramException as e:
+    #         logger.error(f"Error sending text with quote: {e}")
+    #         self.send_text(chat_id, text)  # Send the text without quote
 
     def send_photo_command_menu(self, chat_id):
         """
@@ -183,7 +190,7 @@ class Bot:
                     image_name = os.path.basename(self.image_path)
                     prediction_summary = img.upload_and_predict(yolo_service_url, image_path, image_name)
                     caption = self.prediction_decode(prediction_summary)
-                    self.send_photo(chat_id, img, caption)
+                    self.send_photo(chat_id, image_path, caption)
                     self.images = []
                     self.image_path = ""
                     return
@@ -201,15 +208,15 @@ class Bot:
             self.image_path = ""
             self.images = []
 
-
-    def prediction_decode(self, prediction_summary):
+    @staticmethod
+    def prediction_decode(prediction_summary):
         try:
             labels = prediction_summary['labels']
             classes = [label['class'] for label in labels]
             quantities = Counter(classes)
             response = "Prediction Summary:\n"
-            response += [f"{key.capitalize()} - {value}\n" for key, value in quantities.items()]
+            response += "\n".join([f"{key.capitalize()} - {value}\n" for key, value in quantities.items()])
             return response
         except (json.JSONDecodeError, KeyError) as e:
             logger.error(f'Error decoding JSON response: {e}')
-            return {}
+            return "Error decoding prediction summary"

@@ -112,7 +112,6 @@ class Img:
             return "Invalid direction for concatenation. Must be 'horizontal' or 'vertical'.", 500
         return "Ok", 200
 
-
     def segment(self):
         """
         Applies a segment filter on the image and saves it to be sent back to the user
@@ -155,26 +154,27 @@ class Img:
         # else:
         #     response.raise_for_status()
 
-    def upload_to_s3(self, file_path, object_name=None):
-        if object_name is None:
-            object_name = os.path.basename(file_path)
+    def upload_to_s3(self, image_path, image_name=None):
+        if image_name is None:
+            image_name = os.path.basename(image_path)
 
         s3_client = boto3.client('s3')
         try:
-            s3_client.upload_file(file_path, self.bucket_name, object_name)
-            image_url = f"https://{self.bucket_name}.s3.amazonaws.com/{object_name}"
+            s3_client.upload_file(image_path, self.bucket_name, image_name)
+            image_url = f"https://{self.bucket_name}.s3.amazonaws.com/{image_name}"
             return image_url
         except ClientError as e:
             logger.error(f"Error uploading file to S3: {e}")
             raise
 
-    def download_from_s3(self, object_name, download_path=None):
-        if download_path is None:
-            download_path = object_name
-
-        s3_client = boto3.client('s3')
-        try:
-            s3_client.download_file(self.bucket_name, object_name, download_path)
-        except ClientError as e:
-            logger.error(f"Error downloading file from S3: {e}")
-            raise
+    # def download_from_s3(self, image_name, download_path=None):
+    #     if download_path is None:
+    #         download_path = image_name
+    #
+    #     s3_client = boto3.client('s3')
+    #     try:
+    #         s3_client.download_file(self.bucket_name, image_name, download_path)
+    #     except ClientError as e:
+    #         logger.error(f"Error downloading file from S3: {e}")
+    #         raise
+    #
