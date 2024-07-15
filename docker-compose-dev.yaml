@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   mongo1:
     image: mongo:4
@@ -6,7 +8,7 @@ services:
       - mongoCluster
       - yolo
     ports:
-      - 27017:27017
+      - "27017:27017"
     volumes:
       - mongo1-data:/data/db
     command: mongod --replSet myReplicaSet --bind_ip_all
@@ -17,7 +19,7 @@ services:
     networks:
       - mongoCluster
     ports:
-      - 27018:27017
+      - "27018:27017"
     volumes:
       - mongo2-data:/data/db
     command: mongod --replSet myReplicaSet --bind_ip_all
@@ -28,7 +30,7 @@ services:
     networks:
       - mongoCluster
     ports:
-      - 27019:27017
+      - "27019:27017"
     volumes:
       - mongo3-data:/data/db
     command: mongod --replSet myReplicaSet --bind_ip_all
@@ -56,7 +58,7 @@ services:
     networks:
       - polybot
     ports:
-      - ${POLY_PORT}:${POLY_PORT}
+      - "${POLY_PORT}:${POLY_PORT}"
     env_file:
       .env
     volumes:
@@ -69,7 +71,7 @@ services:
       - yolo
       - polybot
     ports:
-      - ${YOLO_PORT}:${YOLO_PORT}
+      - "${YOLO_PORT}:${YOLO_PORT}"
     env_file:
       .env
     volumes:
@@ -77,12 +79,11 @@ services:
 
 networks:
   mongoCluster:
-    name: mongoCluster
     driver: bridge
   polybot:
-    name: polybot
+    driver: bridge
   yolo:
-    name: yolo
+    driver: bridge
 
 volumes:
   mongo1-data:
