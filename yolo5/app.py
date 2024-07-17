@@ -92,9 +92,15 @@ def predict():
     upload_to_s3(str(predicted_img_path), f'{prediction_id}/{img_name}')
 
     pred_summary_path = Path(f'static/data/{prediction_id}/labels/{img_name.split(".")[0]}.txt')
+    logger.info(f"Looking for prediction summary at {pred_summary_path}")
+
     if pred_summary_path.exists():
         with open(pred_summary_path) as f:
             labels = f.read().splitlines()
+            if not labels:
+                logger.error(f'Prediction result is empty at {pred_summary_path}')
+                return f'Prediction: {prediction_id}. prediction result is empty', 404
+
             labels = [line.split(' ') for line in labels]
             labels = [{
                 'class': names[int(label[0])],
