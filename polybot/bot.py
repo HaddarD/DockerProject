@@ -6,7 +6,6 @@ from telebot.types import InputFile
 from img_proc import Img
 from collections import Counter
 import json
-import requests
 
 
 class Bot:
