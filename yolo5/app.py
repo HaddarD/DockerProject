@@ -136,20 +136,35 @@ def predict():
         }
 
         try:
+            # Attempt to insert the document
             insert_result = collection.insert_one(prediction_summary)
-            logger.info(f"Inserted document ID: {insert_result.inserted_id}")
-            logger.info(f'Prediction: {prediction_id}. prediction summary stored in MongoDB')
-            response_summary = prediction_summary.copy()
+
+            # Log the result of the insertion
+            logger.info(f"Inserted ID: {insert_result.inserted_id}")
+
+            # Retrieve the inserted document
+            inserted_doc = collection.find_one({'_id': insert_result.inserted_id})
+
+            # Create a new dict without the '_id' field
+            response_summary = {k: v for k, v in inserted_doc.items() if k != '_id'}
+
+            # Add the inserted ID as a string
             response_summary['mongo_id'] = str(insert_result.inserted_id)
 
-            return jsonify({"status": "success", "message": "Prediction Done Successfully :D", "result_path": response_summary}), 200
+            logger.info(f"Response summary: {response_summary}")
+
+            return jsonify({
+                "status": "success",
+                "message": "Prediction Done Successfully :D",
+                "result_path": response_summary
+            }), 200
 
         except Exception as e:
-            logger.error(f'Error storing prediction summary in MongoDB: {e}')
-            return jsonify({"status": "error", "message": str(e)}), 500
-
-    else:
-        return jsonify({"status": "error", "message": "Prediction result not found"}), 404
+            logger.error(f"Error during MongoDB operation: {str(e)}")
+            return jsonify({
+                "status": "error",
+                "message": f"An error occurred: {str(e)}"
+            }), 500
 
 
 if __name__ == "__main__":
