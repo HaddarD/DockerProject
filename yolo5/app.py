@@ -64,9 +64,12 @@ def upload_to_s3(local_path, s3_key):
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    app.logger.info("Predict endpoint was hit")
     # img_name = request.args.get('imgName')
     if 'imgName' in request.args:
         img_name = request.args['imgName']
+        app.logger.info(f"Received request for image: {img_name}")
+
     else:
         return 'Error: imgName parameter is required', 400
     logger.info(f'Received image name: {img_name}')
