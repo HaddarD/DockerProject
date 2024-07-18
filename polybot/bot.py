@@ -86,7 +86,7 @@ class Bot:
                 elif msg["text"] != 'Please don\'t quote me':
                     self.send_text_with_quote(
                         chat_id,
-                        f"Hey! <(','<)<('-')>(>',')> \n {msg['text']}",
+                        f"Hey! <('-'<)<('.')>(>'-')> \n {msg['text']}",
                         quoted_msg_id=msg['message_id']
                     )
                     # self.send_text_with_quote(msg['chat']['id'], msg[f"Hey! <('-'<)<('.')>(>'-')> \n {msg}"], quoted_msg_id=msg["message_id"])
@@ -215,18 +215,19 @@ class Bot:
             logger.info(f"Prediction summary content: {prediction_summary}")
 
             # Assuming prediction_summary is a list of dictionaries
-            if isinstance(prediction_summary, list):
-                classes = [label['class'] for label in prediction_summary]
-            # If prediction_summary is a dictionary containing 'labels'
-            elif isinstance(prediction_summary, dict) and 'labels' in prediction_summary:
-                labels = prediction_summary['labels']
-                classes = [label['class'] for label in labels]
+            if isinstance(prediction_summary, dict) and 'result_path' in prediction_summary:
+                result_path = prediction_summary['result_path']
+                if 'labels' in result_path:
+                    labels = result_path['labels']
+                    classes = [label['class'] for label in labels]
+                else:
+                    raise KeyError("Missing 'labels' in 'result_path'")
             else:
                 raise KeyError("Invalid structure for prediction_summary")
 
             quantities = Counter(classes)
             response = "Prediction Summary:\n"
-            response += "\n".join([f"{key.capitalize()} - {value}\n" for key, value in quantities.items()])
+            response += "\n".join([f"{key.capitalize()} - {value}" for key, value in quantities.items()])
             return response
 
         except (json.JSONDecodeError, KeyError, TypeError) as e:
