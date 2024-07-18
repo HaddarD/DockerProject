@@ -87,7 +87,7 @@ class Bot:
                 elif msg["text"] != 'Please don\'t quote me':
                     self.send_text_with_quote(
                         chat_id,
-                        f"Hey! <('.'<)<('-')>(>'.')> \n {msg['text']}",
+                        f"Hey! <('.'<)<('_')>(>'.')> \n {msg['text']}",
                         quoted_msg_id=msg['message_id']
                     )
                     # self.send_text_with_quote(msg['chat']['id'], msg[f"Hey! <('-'<)<('.')>(>'-')> \n {msg}"], quoted_msg_id=msg["message_id"])

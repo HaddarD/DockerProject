@@ -1,6 +1,6 @@
 import time
 from pathlib import Path
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from detect import run
 import uuid
 import yaml
@@ -9,6 +9,7 @@ from pymongo import MongoClient
 import os
 import boto3
 from botocore.exceptions import ClientError
+from bson import json_util
 
 logger = logger.opt(colors=True)
 
@@ -142,7 +143,7 @@ def predict():
             logger.error(f'Error storing prediction summary in MongoDB: {e}')
             return jsonify({"status": "error", "message": str(e)}), 500
 
-        return jsonify({"status": "success", "message": "Prediction Done Successfully :D", "result_path": prediction_summary}), 200
+        return Response(json_util.dumps({"status": "success", "message": "Prediction Done Successfully :D", "result_path": prediction_summary}), mimetype='application/json'), 200
     else:
         return jsonify({"status": "error", "message": "Prediction result not found"}), 404
 

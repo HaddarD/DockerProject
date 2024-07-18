@@ -6,6 +6,7 @@ import os
 from loguru import logger
 import boto3
 from botocore.exceptions import ClientError
+import json
 
 def rgb2gray(rgb):
     r, g, b = rgb[:, :, 0], rgb[:, :, 1], rgb[:, :, 2]
@@ -144,7 +145,7 @@ class Img:
             response = requests.post(full_url, params={'imgName': image_name})
             response.raise_for_status()
             logger.info(f"Received response from YOLO5 service: {response.status_code}")
-            return response.json()
+            return json.loads(response.text)
         except requests.RequestException as e:
             logger.exception(f"Error during YOLO5 service request: {e}")
             raise
