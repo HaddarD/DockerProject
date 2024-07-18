@@ -78,21 +78,33 @@ def predict():
     logger.info(f'prediction: {prediction_id}. start processing')
 
     original_img_path = Path(f'images/{img_name}')
-    download_from_s3(images_bucket, img_name, str(original_img_path))
+    try:
+        download_from_s3(images_bucket, img_name, str(original_img_path))
+    except ClientError as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
     logger.info(f'Prediction: {prediction_id}. Download img completed')
 
-    run(
-        weights='yolov5s.pt',
-        data='data/coco128.yaml',
-        source=str(original_img_path),
-        project='static/data',
-        name=prediction_id,
-        save_txt=True
-    )
+    try:
+        run(
+            weights='yolov5s.pt',
+            data='data/coco128.yaml',
+            source=str(original_img_path),
+            project='static/data',
+            name=prediction_id,
+            save_txt=True
+        )
+    except Exception as e:
+        logger.error(f'Error during prediction: {e}')
+        return jsonify({"status": "error", "message": str(e)}), 500
+
     logger.info(f'Prediction: {prediction_id}. done')
 
     predicted_img_path = Path(f'static/data/{prediction_id}/{img_name}')
-    upload_to_s3(str(predicted_img_path), f'{prediction_id}/{img_name}')
+    try:
+        upload_to_s3(str(predicted_img_path), f'{prediction_id}/{img_name}')
+    except ClientError as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
     pred_summary_path = Path(f'static/data/{prediction_id}/labels/{img_name.split(".")[0]}.txt')
     logger.info(f"Looking for prediction summary at {pred_summary_path}")
@@ -102,7 +114,7 @@ def predict():
             labels = f.read().splitlines()
             if not labels:
                 logger.error(f'Prediction result is empty at {pred_summary_path}')
-                return f'Prediction: {prediction_id}. prediction result is empty', 404
+                return jsonify({"status": "error", "message": "Prediction result is empty"}), 404
 
             labels = [line.split(' ') for line in labels]
             labels = [{
@@ -128,11 +140,11 @@ def predict():
             logger.info(f'Prediction: {prediction_id}. prediction summary stored in MongoDB')
         except Exception as e:
             logger.error(f'Error storing prediction summary in MongoDB: {e}')
-            return f'Error storing prediction summary in MongoDB: {e}', 500
+            return jsonify({"status": "error", "message": str(e)}), 500
 
         return jsonify({"status": "success", "message": "Prediction Done Successfully :D", "result_path": prediction_summary}), 200
     else:
-        return f'Prediction: {prediction_id}. prediction result not found', 404
+        return jsonify({"status": "error", "message": "Prediction result not found"}), 404
 
 
 if __name__ == "__main__":
