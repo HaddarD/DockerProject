@@ -1,6 +1,6 @@
 import time
 from pathlib import Path
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from detect import run
 import uuid
 import yaml
@@ -130,7 +130,7 @@ def predict():
             logger.error(f'Error storing prediction summary in MongoDB: {e}')
             return f'Error storing prediction summary in MongoDB: {e}', 500
 
-        return f'Prediction processed successfully:\n{prediction_summary}', 200
+        return jsonify({"status": "success", "message": "Prediction Done Successfully :D", "result_path": prediction_summary}), 200
     else:
         return f'Prediction: {prediction_id}. prediction result not found', 404
 
