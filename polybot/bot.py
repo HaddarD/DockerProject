@@ -210,12 +210,35 @@ class Bot:
     @staticmethod
     def prediction_decode(prediction_summary):
         try:
-            labels = prediction_summary['labels']
-            classes = [label['class'] for label in labels]
+            # Check the type of prediction_summary and log it
+            logger.info(f"Prediction summary type: {type(prediction_summary)}")
+            logger.info(f"Prediction summary content: {prediction_summary}")
+
+            # Assuming prediction_summary is a list of dictionaries
+            if isinstance(prediction_summary, list):
+                classes = [label['class'] for label in prediction_summary]
+            # If prediction_summary is a dictionary containing 'labels'
+            elif isinstance(prediction_summary, dict) and 'labels' in prediction_summary:
+                labels = prediction_summary['labels']
+                classes = [label['class'] for label in labels]
+            else:
+                raise KeyError("Invalid structure for prediction_summary")
+
             quantities = Counter(classes)
             response = "Prediction Summary:\n"
             response += "\n".join([f"{key.capitalize()} - {value}\n" for key, value in quantities.items()])
             return response
-        except (json.JSONDecodeError, KeyError) as e:
-            logger.error(f'Error decoding JSON response: {e}')
+
+        except (json.JSONDecodeError, KeyError, TypeError) as e:
+            logger.error(f'Error decoding prediction summary: {e}')
             return "Error decoding prediction summary"
+
+        #     labels = prediction_summary['labels']
+        #     classes = [label['class'] for label in labels]
+        #     quantities = Counter(classes)
+        #     response = "Prediction Summary:\n"
+        #     response += "\n".join([f"{key.capitalize()} - {value}\n" for key, value in quantities.items()])
+        #     return response
+        # except (json.JSONDecodeError, KeyError) as e:
+        #     logger.error(f'Error decoding JSON response: {e}')
+        #     return "Error decoding prediction summary"
