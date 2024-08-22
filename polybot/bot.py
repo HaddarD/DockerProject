@@ -113,13 +113,6 @@ class Bot:
         except Exception:
             self.send_text(chat_id, "Please try again")
 
-    # def send_text_with_quote(self, chat_id, text, quoted_msg_id):
-    #     try:
-    #         self.telegram_bot_client.send_message(chat_id, text, reply_to_message_id=quoted_msg_id)
-    #     except telebot.apihelper.ApiTelegramException as e:
-    #         logger.error(f"Error sending text with quote: {e}")
-    #         self.send_text(chat_id, text)  # Send the text without quote
-
     def send_photo_command_menu(self, chat_id):
         """
         Sends a links menu of the available filters as a response message to any image or images group received from the user
@@ -234,12 +227,4 @@ class Bot:
             logger.error(f'Error decoding prediction summary: {e}')
             return "Error decoding prediction summary"
 
-        #     labels = prediction_summary['labels']
-        #     classes = [label['class'] for label in labels]
-        #     quantities = Counter(classes)
-        #     response = "Prediction Summary:\n"
-        #     response += "\n".join([f"{key.capitalize()} - {value}\n" for key, value in quantities.items()])
-        #     return response
-        # except (json.JSONDecodeError, KeyError) as e:
-        #     logger.error(f'Error decoding JSON response: {e}')
-        #     return "Error decoding prediction summary"
+

@@ -149,11 +149,6 @@ class Img:
         except requests.RequestException as e:
             logger.exception(f"Error during YOLO5 service request: {e}")
             raise
-        # response = requests.post(f'{yolo_service_url}/predict', params={'imgName': image_name})
-        # if response.status_code == 200:
-        #     return response.json()
-        # else:
-        #     response.raise_for_status()
 
     def upload_to_s3(self, image_path, image_name=None):
         if image_name is None:
@@ -168,14 +163,3 @@ class Img:
             logger.error(f"Error uploading file to S3: {e}")
             raise
 
-    # def download_from_s3(self, image_name, download_path=None):
-    #     if download_path is None:
-    #         download_path = image_name
-    #
-    #     s3_client = boto3.client('s3')
-    #     try:
-    #         s3_client.download_file(self.bucket_name, image_name, download_path)
-    #     except ClientError as e:
-    #         logger.error(f"Error downloading file from S3: {e}")
-    #         raise
-    #

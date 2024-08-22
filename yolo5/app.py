@@ -40,7 +40,6 @@ def download_from_s3(bucket_name, s3_key, local_path):
         logger.error(f'<red>Error downloading from S3: {e}</red>')
         raise
 
-
 def upload_to_s3(local_path, s3_key):
     bucket_name = os.getenv('BUCKET_NAME')
     s3_client = boto3.client('s3')
@@ -53,14 +52,6 @@ def upload_to_s3(local_path, s3_key):
     except ClientError as e:
         logger.error(f"Error uploading file to S3: {e}")
         raise
-
-    # try:
-    #     s3_client.upload_file(local_path, bucket_name, s3_key)
-    #     logger.info(f'<green>Successfully uploaded {local_path} to s3://{bucket_name}/{s3_key}</green>')
-    # except ClientError as e:
-    #     logger.error(f'<red>Error uploading to S3: {e}</red>')
-    #     raise
-
 
 @app.route('/predict', methods=['POST'])
 def predict():
